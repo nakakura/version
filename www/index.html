@@ -1,0 +1,17 @@
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script type='text/javascript'>
+var io_ = io.connect();
+
+io_.on("echo", function(name) {
+  console.log("echo " + name.value);
+});
+
+io_.on("disconnect", function(){
+  console.log("disconnect");
+});
+
+
+console.log("echo");
+
+io_.emit("echo", 'hogehoge');
+</script>
