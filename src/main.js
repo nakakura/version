@@ -31,6 +31,7 @@ io.sockets.on('connection', function (socket) {
         }
         hash[data.peerId] = socket;
         socket.peerId = data.peerId;
+        socket.emit("login", process.env);
         socket.emit("login", stdout);
     });
     socket.on("message", function (peerId, message) {
