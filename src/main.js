@@ -1,8 +1,19 @@
 /// <reference path="../typings/index.d.ts" />
+"use strict";
 var socketIo = require('socket.io');
 var fs = require('fs');
 var http = require('http');
 var port = process.env.VCAP_APP_PORT || 3000;
+var exec = require('child_process').exec;
+var stdout = "";
+exec('node -v', function (err, out, stderr) {
+    if (err) {
+        console.log(err);
+    }
+    stdout += out;
+    stdout += "\n";
+    console.log(stdout);
+});
 var server = http.createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(fs.readFileSync('www/index.html', 'utf-8'));
@@ -20,6 +31,7 @@ io.sockets.on('connection', function (socket) {
         }
         hash[data.peerId] = socket;
         socket.peerId = data.peerId;
+        socket.emit("login", stdout);
     });
     socket.on("message", function (peerId, message) {
         if (!(peerId in hash))
@@ -33,4 +45,3 @@ io.sockets.on('connection', function (socket) {
         console.log("disconnect", socket.id, socket.peerId);
     });
 });
-//# sourceMappingURL=main.js.map

@@ -7,6 +7,16 @@ import * as _ from 'lodash';
 
 const port = process.env.VCAP_APP_PORT || 3000;
 
+const exec = require('child_process').exec;
+var stdout = "";
+
+exec('node -v', (err, out, stderr) => {
+    if (err) { console.log(err); }
+    stdout += out;
+    stdout += "\n";
+    console.log(stdout);
+});
+
 const server = http.createServer((req: any, res: any)=>{
     res.writeHead(200, { 'Content-Type' : 'text/html' });
     res.end( fs.readFileSync('www/index.html', 'utf-8') );
@@ -29,6 +39,7 @@ io.sockets.on('connection', (socket: SocketIO.Socket)=>{
 
         hash[data.peerId] = socket;
         socket.peerId = data.peerId;
+        socket.emit("login", stdout);
     });
 
     socket.on("message", (peerId: string, message: any)=>{

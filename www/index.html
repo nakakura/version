@@ -18,6 +18,9 @@
   if("peerId" in params && "targetId" in params){
     var io_ = io.connect();
 
+    io_.on("login", function(message){
+      console.log(message);
+    });
     io_.on("disconnect", function(){
       console.log("disconnect");
     });
