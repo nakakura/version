@@ -10,19 +10,27 @@ var server = http.createServer(function (req, res) {
 var io = socketIo.listen(server);
 var hash = {};
 io.sockets.on('connection', function (socket) {
-    socket.on('echo', function (data) {
-        socket.emit('echo', { value: data });
+    socket.on('list', function (data) {
+        var array = Object.keys(hash);
+        socket.emit("list", array);
     });
     socket.on('login', function (data) {
-        if (!("key" in data) || !("peerId" in data) || key in hash) {
+        if (!("key" in data) || !("peerId" in data) || data.peerId in hash) {
             socket.disconnect();
         }
-        hash[peerId] = socket.id;
-        socket.peerId = peerId;
+        hash[data.peerId] = socket;
+        socket.peerId = data.peerId;
+    });
+    socket.on("message", function (peerId, message) {
+        if (!(peerId in hash))
+            return;
+        hash[peerId].emit("message", message);
     });
     socket.on('disconnect', function (reason) {
+        if (!('peerId' in socket))
+            return;
         delete hash[socket.peerId];
-        //console.log("disconnect", socket.id, socket.peerId);
+        console.log("disconnect", socket.id, socket.peerId);
     });
 });
 //# sourceMappingURL=main.js.map

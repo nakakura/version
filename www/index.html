@@ -1,17 +1,43 @@
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script type='text/javascript'>
-var io_ = io.connect();
+  var getUrlVars = function(){
+    var vars = {};
+    var param = location.search.substring(1).split('&');
+    for(var i = 0; i < param.length; i++) {
+      var keySearch = param[i].search(/=/);
+      var key = '';
+      if(keySearch != -1) key = param[i].slice(0, keySearch);
+      var val = param[i].slice(param[i].indexOf('=', 0) + 1);
+      if(key != '') vars[key] = decodeURI(val);
+    }
+    return vars;
+  };
 
-io_.on("echo", function(name) {
-  console.log("echo " + name.value);
-});
+  var params = getUrlVars();
+  console.log(params);
+  if("peerId" in params && "targetId" in params){
+    var io_ = io.connect();
 
-io_.on("disconnect", function(){
-  console.log("disconnect");
-});
+    io_.on("disconnect", function(){
+      console.log("disconnect");
+    });
 
+    var hoge = {};
+    hoge.key = "hogehoge";
+    hoge.peerId = params['peerId'];
 
-console.log("echo");
+    io_.emit("login", hoge);
+    io_.on("message", function(message){
+      console.log(message);
+    });
 
-io_.emit("echo", 'hogehoge');
+    io_.on("list", function(list){
+      console.log(list);
+      console.log(params.targetId);
+      if(list.includes(params.targetId)){
+        io_.emit("message", params.targetId, {item: "text"});
+      }
+    });
+    io_.emit("list");
+  }
 </script>

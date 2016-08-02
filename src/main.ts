@@ -3,7 +3,7 @@
 import * as socketIo from 'socket.io';
 import * as fs from 'fs';
 import * as http from 'http';
-import Room from './room';
+import * as _ from 'lodash';
 
 const port = process.env.VCAP_APP_PORT || 3000;
 
@@ -14,24 +14,31 @@ const server = http.createServer((req: any, res: any)=>{
 
 const io = socketIo.listen(server);
 
-const hash: {[key: string]: string} = {};
+const hash: {[key: string]: SocketIO.Socket} = {};
 
 io.sockets.on('connection', (socket: SocketIO.Socket)=>{
-    socket.on('echo', (data: any)=>{
-        socket.emit('echo', {value: data});
+    socket.on('list', (data: any)=>{
+        const array = Object.keys(hash);
+        socket.emit("list", array);
     });
 
     socket.on('login', (data: any)=>{
-        if(!("key" in data) || !("peerId" in data) || key in hash) {
+        if(!("key" in data) || !("peerId" in data) || data.peerId in hash) {
             socket.disconnect();
         }
 
-        hash[peerId] = socket.id;
-        socket.peerId = peerId;
+        hash[data.peerId] = socket;
+        socket.peerId = data.peerId;
+    });
+
+    socket.on("message", (peerId: string, message: any)=>{
+        if(!(peerId in hash)) return;
+        hash[peerId].emit("message", message);
     });
 
     socket.on('disconnect', (reason: string)=>{
+        if(!('peerId' in socket)) return;
         delete hash[socket.peerId];
-        //console.log("disconnect", socket.id, socket.peerId);
+        console.log("disconnect", socket.id, socket.peerId);
     })
 });
